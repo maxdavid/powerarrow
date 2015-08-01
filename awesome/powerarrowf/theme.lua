@@ -5,9 +5,9 @@
 theme = {}
 
 -- Todo:  Change the $USER to yourself.
-pathToConfig = "/home/ep/.config/awesome/"
+pathToConfig = "/home/max/.config/awesome/"
 
-theme.font          = "sans 8"
+theme.font          = "Terminus 11"
 
 theme.bg_normal     = "#222222"
 theme.bg_focus      = "#1E2320"
@@ -15,7 +15,8 @@ theme.bg_urgent     = "#3F3F3F"
 theme.bg_systray    = theme.bg_normal
 
 theme.fg_normal     = "#AAAAAA"
-theme.fg_focus      = "#0099CC"
+--theme.fg_focus      = "#0099CC"
+theme.fg_focus      = "#5fb6d3"
 theme.fg_urgent     = "#3F3F3F"
 
 theme.border_width  = 1

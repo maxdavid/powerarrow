@@ -43,18 +43,18 @@ end
 --{{---| Theme | -------------------------------------
 
 -- Todo:  Please change the "ep" to your $USER
-config_dir = ("/home/ep/.config/awesome/")
+config_dir = ("/home/max/.config/awesome/")
 themes_dir = (config_dir .. "/powerarrowf")
 
 beautiful.init(themes_dir .. "/theme.lua")
 
 -- This is used later as the default terminal, browser and editor to run.
-terminal = "termite"
+terminal = "urxvt"
 editor = os.getenv("EDITOR") or "vim"
 editor_cmd = terminal .. " -e " .. editor
-browser = "chromium"
+browser = "firefox"
 
-font = "Inconsolata 11"
+font = "Inconsolata-g 10"
 
 -- {{ These are the power arrow dividers/separators }} --
 arr1 = wibox.widget.imagebox()
@@ -108,7 +108,7 @@ end
 tags = {}
 for s = 1, screen.count() do
     -- Each screen has its own tag table.
-    tags[s] = awful.tag({ 1, 2, 3}, s, layouts[1])
+    tags[s] = awful.tag({ 1, 2, 3, 4}, s, layouts[2])
 end
 -- }}}
 
@@ -136,7 +136,7 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 
 --{{-- Time and Date Widget }} --
 tdwidget = wibox.widget.textbox()
-local strf = '<span font="' .. font .. '" color="#EEEEEE" background="#777E76">%b %d %I:%M</span>'
+local strf = '<span font="' .. font .. '" color="#EEEEEE" background="#777E76"> %b %d %I:%M </span>'
 vicious.register(tdwidget, vicious.widgets.date, strf, 20)
 
 clockicon = wibox.widget.imagebox()
@@ -146,27 +146,33 @@ clockicon:set_image(beautiful.clock)
 netwidget = wibox.widget.textbox()
 vicious.register(netwidget, vicious.widgets.net, function(widget, args)
     local interface = ""
-    if args["{wlp2s0 carrier}"] == 1 then
-        interface = "wlp2s0"
-    elseif args["{enp0s25 carrier}"] == 1 then
-        interface = "enp0s25"
+    if args["{wifi0 carrier}"] == 1 then
+        interface = "wifi0"
+    elseif args["{wired0 carrier}"] == 1 then
+        interface = "wired0"
     else
         return ""
     end
-    return '<span background="#C2C2A4" font="Inconsolata 11"> <span font ="Inconsolata 11" color="#FFFFFF">'..args["{"..interface.." down_kb}"]..'kbps'..'</span></span>' end, 10)
+    return '<span background="#C2C2A4" font="Inconsolata-g 10"> <span font ="Inconsolata-g 10" color="#FFFFFF">▾'..args["{"..interface.." down_kb}"]..' ▴'..args["{"..interface.." up_kb}"]..' </span></span>' end, 5)
 
 ---{{---| Wifi Signal Widget |-------
 neticon = wibox.widget.imagebox()
 vicious.register(neticon, vicious.widgets.wifi, function(widget, args)
-    local sigstrength = tonumber(args["{link}"])
+  spacer = " "
+  local sigstrength = awful.util.pread("awk 'NR==3 {printf \"%.1f\\n\",($3/70)*100}' /proc/net/wireless")
+  if sigstrength == "" then
+    --neticon:set_image(beautiful.netlow)
+  else
+    sigstrength = tonumber(sigstrength)
     if sigstrength > 69 then
-        neticon:set_image(beautiful.nethigh)
+      neticon:set_image(beautiful.nethigh)
     elseif sigstrength > 40 and sigstrength < 70 then
-        neticon:set_image(beautiful.netmedium)
+      neticon:set_image(beautiful.netmedium)
     else
-        neticon:set_image(beautiful.netlow)
+      neticon:set_image(beautiful.netlow)
     end
-end, 120, 'wlp2s0')
+  end
+end, 120, 'wifi0')
 
 
 --{{ Battery Widget }} --
@@ -174,14 +180,25 @@ baticon = wibox.widget.imagebox()
 baticon:set_image(beautiful.baticon)
 
 batwidget = wibox.widget.textbox()
-vicious.register( batwidget, vicious.widgets.bat, '<span background="#92B0A0" font="Inconsolata 11"><span font="Inconsolata 11" color="#FFFFFF" background="#92B0A0">$1$2% </span></span>', 30, "BAT0" )
+vicious.register(batwidget, vicious.widgets.bat, function(widget, args)
+  batpercent = awful.util.pread("acpi -b | awk '{print $4}' | sed 's/,$//g'")
+  batnumber = tonumber(awful.util.pread("acpi -b | awk '{print $4}' | sed 's/,$//g' | sed 's/%$//g'"))
+  batstate = awful.util.pread("acpi -b | awk '{print $3}' | sed 's/,$//g'")
+  --batnumber = tonumber(string.sub(batpercent,1,-2))
+
+  if batnumber > 15 then
+    return '<span background="#92B0A0" font="Inconsolata-g 10"><span font="Inconsolata-g 10" color="#FFFFFF" background="#92B0A0">'..batpercent..' </span></span>'
+  else
+    return '<span background="#92B0A0" font="Inconsolata-g 10"><span font="Inconsolata-g 10" color="#FF1F1F" background="#92B0A0">'..batpercent..' </span></span>'
+  end
+end, 30, "BAT0" )
 
 
 --{{---| File Size widget |-----
 fswidget = wibox.widget.textbox()
 
 vicious.register(fswidget, vicious.widgets.fs,
-'<span background="#D0785D" font="Inconsolata 11"> <span font="Inconsolata 11" color="#EEEEEE">${/home used_gb}/${/home avail_gb} GB </span></span>', 
+'<span background="#D0785D" font="Inconsolata-g 10"> <span font="Inconsolata-g 10" color="#EEEEEE">${/home used_gb}/${/home avail_gb} GB </span></span>', 
 800)
 
 fsicon = wibox.widget.imagebox()
@@ -190,7 +207,7 @@ fsicon:set_image(beautiful.fsicon)
 ----{{--| Volume / volume icon |----------
 volume = wibox.widget.textbox()
 vicious.register(volume, vicious.widgets.volume,
-'<span background="#4B3B51" font="Inconsolata 11"><span font="Inconsolata 11" color="#EEEEEE"> Vol:$1 </span></span>', 0.3, "Master")
+'<span background="#4B3B51" font="Inconsolata-g 10"><span font="Inconsolata-g 10" color="#EEEEEE"> Vol:$1 </span></span>', 0.3, "Master")
 
 volumeicon = wibox.widget.imagebox()
 vicious.register(volumeicon, vicious.widgets.volume, function(widget, args)
@@ -211,7 +228,7 @@ end, 0.3, "Master")
 --{{---| CPU / sensors widget |-----------
 cpuwidget = wibox.widget.textbox()
 vicious.register(cpuwidget, vicious.widgets.cpu,
-'<span background="#4B696D" font="Inconsolata 11"> <span font="Inconsolata 11" color="#DDDDDD">$2%<span color="#888888">·</span>$3% </span></span>', 5)
+'<span background="#4B696D" font="Inconsolata-g 10"> <span font="Inconsolata-g 10" color="#DDDDDD">$2%<span color="#888888">·</span>$3% </span></span>', 5)
 
 cpuicon = wibox.widget.imagebox()
 cpuicon:set_image(beautiful.cpuicon)
@@ -219,7 +236,7 @@ cpuicon:set_image(beautiful.cpuicon)
 --{{--| MEM widget |-----------------
 memwidget = wibox.widget.textbox()
 
-vicious.register(memwidget, vicious.widgets.mem, '<span background="#777E76" font="Inconsolata 11"> <span font="Inconsolata 11" color="#EEEEEE" background="#777E76">$2MB </span></span>', 20)
+vicious.register(memwidget, vicious.widgets.mem, '<span background="#777E76" font="Inconsolata-g 10"> <span font="Inconsolata-g 10" color="#EEEEEE" background="#777E76">$2MB </span></span>', 20)
 memicon = wibox.widget.imagebox()
 memicon:set_image(beautiful.mem)
 
@@ -338,7 +355,7 @@ for s = 1, screen.count() do
     right_layout:add(neticon)
     right_layout:add(netwidget)
     right_layout:add(arr2)
-    right_layout:add(clockicon)
+    --right_layout:add(clockicon)
     right_layout:add(tdwidget)
     right_layout:add(arr1)
     right_layout:add(mylayoutbox[s])
@@ -367,9 +384,9 @@ globalkeys = awful.util.table.join(
     awful.key({ modkey,           }, "Right",  awful.tag.viewnext       ),
     awful.key({ modkey,           }, "Escape", awful.tag.history.restore),
 
--- {{ Opens Chromium }} --
+-- {{ Opens Firefox }} --
 
-awful.key({ "Control", "Shift"}, "c", function() awful.util.spawn("chromium") end),
+awful.key({ modkey, "Shift"}, "w", function() awful.util.spawn("firefox") end),
 awful.key({ "Control", "Shift"}, "n", function() awful.util.spawn("chromium -incognito") end),
 
 -- {{ Shuts down Computer }} --
@@ -389,6 +406,15 @@ awful.key({ "Control", "Shift"}, "b", function() awful.util.spawn("/opt/sublime-
 awful.key({     }, "XF86AudioRaiseVolume", function() awful.util.spawn("amixer set Master 5%+", false) end),
 awful.key({     }, "XF86AudioLowerVolume", function() awful.util.spawn("amixer set Master 5%-", false) end),
 awful.key({     }, "XF86AudioMute", function() awful.util.spawn("amixer set Master toggle", false) end),
+
+-- {{ Backlight Control }} --
+
+awful.key({     }, "XF86MonBrightnessUp", function() awful.util.spawn("light -A 3", false) end),
+awful.key({     }, "XF86MonBrightnessDown", function() awful.util.spawn("light -U 3", false) end),
+
+-- {{ Lock screen button }} --
+
+awful.key({     }, "XF86Launch1", function() awful.util.spawn("xscreensaver-command -lock", false) end),
 
 -- {{ Vim-like controls:
 
@@ -624,8 +650,9 @@ function run_once(cmd)
         awful.util.spawn_with_shell("pgrep -u $USER -x " .. findme .. " > /dev/null || (" .. cmd .. ")")
 end
 
--- {{ I need redshift to save my eyes }} -
-run_once("redshift -l 49.26:-123.23")
+-- {{ backlight default setting }} --
+
+run_once("light -S 30")
 awful.util.spawn_with_shell("xmodmap ~/.speedswapper")
 
 -- {{ Turns off the terminal bell }} --
