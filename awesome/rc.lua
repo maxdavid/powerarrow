@@ -228,7 +228,7 @@ end, 0.3, "Master")
 --{{---| CPU / sensors widget |-----------
 cpuwidget = wibox.widget.textbox()
 vicious.register(cpuwidget, vicious.widgets.cpu,
-'<span background="#4B696D" font="Inconsolata-g 10"> <span font="Inconsolata-g 10" color="#DDDDDD">$2%<span color="#888888">·</span>$3% </span></span>', 5)
+'<span background="#4B696D" font="Inconsolata-g 10"> <span font="Inconsolata-g 10" color="#DDDDDD">$1%<span color="#888888">·</span>$2%<span color="#888888">·</span>$3%<span color="#888888">·</span>$4% </span></span>', 5)
 
 cpuicon = wibox.widget.imagebox()
 cpuicon:set_image(beautiful.cpuicon)
